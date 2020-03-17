@@ -66,7 +66,7 @@ Duck::Duck(std::string sound_path_name): Mesh("Duck")
     alSourcef(source, AL_CONE_OUTER_ANGLE, 30);
     // à l'extérieur de [-outer/2,outer/2] il y a une attenuation totale
 
-    alDistanceModel(AL_LINEAR_DISTANCE); 
+    alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED); 
 }
 
 
