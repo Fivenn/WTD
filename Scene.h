@@ -16,8 +16,8 @@ class Scene
 private:
 
     // objets de la scène
-    Duck* m_Duck_ch1;
-    Duck* m_Duck_ch2;
+    Duck *m_Ducks[2];
+
     Ground* m_Ground;
 
     // lampes
@@ -40,11 +40,12 @@ private:
     double m_MousePrecX;
     double m_MousePrecY;
 
-
 public:
 
-    /** constructeur, crée les objets 3D à dessiner */
-    Scene();
+    /** constructeur, crée les objets 3D à dessiner
+     * @param filename : nom du fichier contenant la configuration des canards à charger
+     */
+    Scene(std::string filename);
 
     /** destructeur, libère les ressources */
     ~Scene();

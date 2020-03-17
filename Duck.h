@@ -30,8 +30,10 @@ private:
 
 public:
 
-    /** constructeur, crée le maillage */
-    Duck();
+    /** constructeur, crée le maillage
+     * @param sound_path_name : Nom du fichier son à lire 
+     */
+    Duck(std::string sound_path_name);
 
     /** destructeur, libère le maillage et l'audio */
     ~Duck();

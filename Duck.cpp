@@ -21,7 +21,7 @@ using namespace mesh;
 
 
 /** constructeur */
-Duck::Duck(): Mesh("Duck")
+Duck::Duck(std::string sound_path_name): Mesh("Duck")
 {
     // matériaux
     m_Material = new MaterialTexture("data/10602_Rubber_Duck_v1_diffuse.jpg");
@@ -66,7 +66,7 @@ Duck::Duck(): Mesh("Duck")
     alSourcef(source, AL_CONE_OUTER_ANGLE, 30);
     // à l'extérieur de [-outer/2,outer/2] il y a une attenuation totale
 
-    alDistanceModel(AL_NONE);
+    alDistanceModel(AL_LINEAR_DISTANCE); 
 }
 
 
@@ -151,7 +151,6 @@ void Duck::setOrientation(vec3 ori)
 {
     vec3::copy(m_Orientation, ori);
 }
-
 
 /** destructeur */
 Duck::~Duck()

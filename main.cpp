@@ -147,7 +147,7 @@ int main(int argc,char **argv)
     alListener3f(AL_VELOCITY, 0, 0, 0);
 
     // création de la scène => création des objets...
-    scene = new Scene();
+    scene = new Scene("duckconfig.txt");
     //debugGLFatal("new Scene()");
 
     // enregistrement des fonctions callbacks
