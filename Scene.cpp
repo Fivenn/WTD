@@ -26,10 +26,9 @@ Scene::Scene(std::string filename)
 
     float position[3];
     float orientation[3];
-    int i = 0;
 
-    inputfile.open(filename, std::ios::out | std::ios::in);
-    
+    inputfile.open(filename);
+
     while(std::getline(inputfile, line)) {
         std::istringstream iss(line);
         while(std::getline(iss, token, ':')) {
@@ -47,27 +46,13 @@ Scene::Scene(std::string filename)
             std::getline(iss, token, ':');
             orientation[2]=atoi(token.c_str());
         }
-         m_Ducks[i] = new Duck(token); // custom Duck constructor
-         m_Ducks[i]->setPosition(vec3::fromValues(position[0],position[1],position[2]));
-         m_Ducks[i]->setOrientation(vec3::fromValues(orientation[0],orientation[1],orientation[2]));
-         m_Ducks[i]->setDraw(false);
-         m_Ducks[i]->setSound(true);
-         ++i;
+        Duck* duck = new Duck(token);
+        duck->setPosition(vec3::fromValues(position[0],position[1],position[2]));
+        duck->setOrientation(vec3::fromValues(orientation[0],orientation[1],orientation[2]));
+        duck->setDraw(false);
+        duck->setSound(true);
+        m_Ducks.push_back(duck); // custom Duck constructor
     }
-
-    // créer les objets à dessiner
-    // m_Duck_ch1 = new Duck();
-    // m_Duck_ch1->setPosition(vec3::fromValues(-5.0, 0.0, -10.0));
-    // m_Duck_ch1->setOrientation(vec3::fromValues(0.0, Utils::radians(0), 0.0));
-    // m_Duck_ch1->setDraw(false);
-    // m_Duck_ch1->setSound(true);
-
-    // m_Duck_ch2 = new Duck();
-    // m_Duck_ch2->setPosition(vec3::fromValues(5.0, 0.0, -10.0));
-    // m_Duck_ch2->setOrientation(vec3::fromValues(0.0, Utils::radians(90), 0.0));
-    // m_Duck_ch2->setDraw(false);
-    // m_Duck_ch2->setSound(true);
-
 
     m_Ground = new Ground();
 
@@ -264,11 +249,9 @@ void Scene::onDrawFrame()
 
 }
 
-
 /** supprime tous les objets de cette scène */
 Scene::~Scene()
 {
-    for(Duck *duck : m_Ducks)
-    delete duck;
+    delete &m_Ducks;
     delete m_Ground;
 }

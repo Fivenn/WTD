@@ -10,13 +10,15 @@
 #include "Duck.h"
 #include "Ground.h"
 
+#include <vector>
+
 
 class Scene
 {
 private:
 
     // objets de la scène
-    Duck *m_Ducks[2];
+    std::vector<Duck*> m_Ducks;
 
     Ground* m_Ground;
 
