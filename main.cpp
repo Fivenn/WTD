@@ -12,32 +12,44 @@
 #include <utils.h>
 #include "Scene.h"
 
+#include <stdio.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <string.h>
+
+#define PORT 8080
+#define SERV_ADDR "127.0.0.1"
+#define N_CHAR 1024UL
 
 /**
  * Scène à dessiner
  * NB: son constructeur doit être appelé après avoir initialisé OpenGL
  **/
-Scene* scene = nullptr;
+Scene *scene = nullptr;
 
 /**
  * Callback pour GLFW : prendre en compte la taille de la vue OpenGL
  **/
-static void onSurfaceChanged(GLFWwindow* window, int width, int height)
+static void onSurfaceChanged(GLFWwindow *window, int width, int height)
 {
-    if (scene == nullptr) return;
+    if (scene == nullptr)
+        return;
     scene->onSurfaceChanged(width, height);
 }
 
 /**
  * Callback pour GLFW : redessiner la vue OpenGL
  **/
-static void onDrawRequest(GLFWwindow* window)
+static void onDrawRequest(GLFWwindow *window)
 {
-    if (scene == nullptr) return;
+    if (scene == nullptr)
+        return;
     Utils::UpdateTime();
     scene->onDrawFrame();
     static bool premiere = true;
-    if (premiere) {
+    if (premiere)
+    {
         // copie écran automatique
         int width, height;
         glfwGetWindowSize(window, &width, &height);
@@ -49,39 +61,43 @@ static void onDrawRequest(GLFWwindow* window)
     glfwSwapBuffers(window);
 }
 
-
-static void onMouseButton(GLFWwindow* window, int button, int action, int mods)
+static void onMouseButton(GLFWwindow *window, int button, int action, int mods)
 {
-    if (scene == nullptr) return;
+    if (scene == nullptr)
+        return;
     double x, y;
     glfwGetCursorPos(window, &x, &y);
-    if (action == GLFW_PRESS) {
-        scene->onMouseDown(button, x,y);
-    } else {
-        scene->onMouseUp(button, x,y);
+    if (action == GLFW_PRESS)
+    {
+        scene->onMouseDown(button, x, y);
+    }
+    else
+    {
+        scene->onMouseUp(button, x, y);
     }
 }
 
-
-static void onMouseMove(GLFWwindow* window, double x, double y)
+static void onMouseMove(GLFWwindow *window, double x, double y)
 {
-    if (scene == nullptr) return;
-    scene->onMouseMove(x,y);
+    if (scene == nullptr)
+        return;
+    scene->onMouseMove(x, y);
 }
 
-
-static void onKeyboard(GLFWwindow* window, int key, int scancode, int action, int mods)
+static void onKeyboard(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
-    if (action == GLFW_RELEASE) return;
-    if (scene == nullptr) return;
-        scene->onKeyDown(key);
+    if (action == GLFW_RELEASE)
+        return;
+    if (scene == nullptr)
+        return;
+    scene->onKeyDown(key);
 }
-
 
 void onExit()
 {
     // libération des ressources demandées par la scène
-    if (scene != nullptr) delete scene;
+    if (scene != nullptr)
+        delete scene;
     scene = nullptr;
 
     // terminaison de GLFW
@@ -94,19 +110,64 @@ void onExit()
     std::cout << std::endl;
 }
 
-
 /** appelée en cas d'erreur */
-void error_callback(int error, const char* description)
+void error_callback(int error, const char *description)
 {
     std::cerr << "GLFW error : " << description << std::endl;
 }
 
-
 /** point d'entrée du programme **/
-int main(int argc,char **argv)
+int main(int argc, char **argv)
 {
+    int sock = 0, client_id;
+    size_t valread;
+    struct sockaddr_in serv_addr;
+    char buffer[N_CHAR];
+
+    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    {
+        std::cerr << "Socket creation error" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_port = htons(PORT);
+
+    // Convert IPv4 and IPv6 addresses from text to binary form
+    if (inet_pton(AF_INET, SERV_ADDR, &serv_addr.sin_addr) <= 0)
+    {
+        std::cerr << "Invalid address / Address not supported " << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
+    {
+        std::cerr << "Connection Failed" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    // init connexion with server by sending CONNEXION message and get the client_id
+    std::string msg = "CONNEXION";
+    send(sock, msg.c_str(), msg.length(), 0);
+    std::cout << msg << " message sent to the server" << std::endl;
+    valread = read(sock, buffer, N_CHAR);
+    std::string message(buffer);
+    std::cout << "Client id : " << message << std::endl;
+    client_id = atoi(message.c_str());
+    
+    // get duck configuration line by line
+    msg = "CONFIGURATION";
+    send(sock, msg.c_str(), msg.length(), 0);
+    do {
+        memset(buffer, 0, sizeof(buffer));
+        valread = read(sock, buffer, N_CHAR);
+        std::cout << "Duck configuration : " << buffer << std::endl;
+        std::cout << message.compare(0, sizeof("END_CONFIGURATION"), "END_CONFIGURATION") << std::endl;
+    } while(true);
+
     // initialisation de GLFW
-    if (!glfwInit()) {
+    if (!glfwInit())
+    {
         std::cerr << "Failed to initialize GLFW" << std::endl;
         exit(EXIT_FAILURE);
     }
@@ -117,8 +178,9 @@ int main(int argc,char **argv)
     glfwWindowHint(GLFW_SAMPLES, 4); // 4x antialiasing
 
     // initialisation de la fenêtre
-    GLFWwindow* window = glfwCreateWindow(640,480, "Livre OpenGL", NULL, NULL);
-    if (window == nullptr) {
+    GLFWwindow *window = glfwCreateWindow(640, 480, "Livre OpenGL", NULL, NULL);
+    if (window == nullptr)
+    {
         std::cerr << "Failed to create window" << std::endl;
         glfwTerminate();
         exit(EXIT_FAILURE);
@@ -129,7 +191,8 @@ int main(int argc,char **argv)
 
     // initialisation de glew
     GLenum err = glewInit();
-    if (err != GLEW_OK) {
+    if (err != GLEW_OK)
+    {
         std::cerr << "Unable to initialize Glew : " << glewGetErrorString(err) << std::endl;
         glfwTerminate();
         exit(EXIT_FAILURE);
@@ -163,8 +226,9 @@ int main(int argc,char **argv)
     std::cout << "Q,D (axis x) A,W (axis y) Z,S (axis z) keys to move" << std::endl;
 
     // boucle principale
-    onSurfaceChanged(window, 640,480);
-    do {
+    onSurfaceChanged(window, 640, 480);
+    do
+    {
         // dessiner
         onDrawRequest(window);
         // attendre les événements

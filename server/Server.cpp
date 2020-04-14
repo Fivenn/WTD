@@ -1,4 +1,4 @@
-#include <Server.h>
+#include "Server.h"
 
 int main(int argc, char *argv[])
 {
@@ -107,20 +107,21 @@ void deal_with_client(int new_socket, unsigned int id)
     char buffer[N_CHAR];
     size_t valread;
     mtx_world.lock();
-    const Json::Value &objs = world["objects"]; // array of objects
+    const Json::Value &objs = world["objects"];
     mtx_world.unlock();
     mtx_winner_id.lock();
     do
     {
         mtx_winner_id.unlock();
         valread = read(new_socket, buffer, N_CHAR);
-        buffer[valread - 1] = '\0'; // FIXME : buffer overflow may occurs
         std::string message(buffer);
         if (message.compare(0, sizeof("CONNEXION"), "CONNEXION") == 0)
         {
             std::cout << "connexion received" << std::endl;
             std::string msg = std::to_string(id);
             send(new_socket, msg.c_str(), msg.length(), 0);
+        } else if(message.compare(0, sizeof("CONFIGURATION"), "CONFIGURATION") == 0) {
+            std::string msg;
             for (unsigned int i = 0; i < objs.size(); i++)
             {
                 mtx_world.lock();
@@ -138,7 +139,10 @@ void deal_with_client(int new_socket, unsigned int id)
                 mtx_world.unlock();
                 send(new_socket, msg.c_str(), msg.length(), 0);
                 std::cout << msg << std::endl;
+                sleep(1);
             }
+            msg = "END_CONFIGURATION";
+            send(new_socket, msg.c_str(), msg.length(), 0);
         }
         else if (message.compare(0, sizeof("CANNARD"), "CANNARD") == 0)
         {
@@ -156,7 +160,8 @@ void deal_with_client(int new_socket, unsigned int id)
         }
         else
         {
-            std::cout << "default case" << std::endl;
+
+            std::cout << message << "default case" << std::endl;
         }
         mtx_winner_id.lock();
     } while (winner_id == -1 && valread != 0);

@@ -1,6 +1,6 @@
 #include <iostream>
 #include <cstdlib>
-#include <string>
+#include <string.h>
 #include <fstream>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -9,6 +9,7 @@
 #include <thread>
 #include <mutex>
 #include <cmath>
+#include <stdio.h>
 
 #define N_CHAR 1024UL
 
