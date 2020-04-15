@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <stdlib.h>
+#include <fstream>
 
 #include <utils.h>
 #include "Scene.h"
@@ -158,13 +159,16 @@ int main(int argc, char **argv)
     // get duck configuration line by line
     msg = "CONFIGURATION";
     send(sock, msg.c_str(), msg.length(), 0);
+    std::ofstream file("duckconfig.txt");
     do {
         memset(buffer, 0, sizeof(buffer));
         valread = read(sock, buffer, N_CHAR);
         message = buffer;
-        std::cout << "Duck configuration : " << message << std::endl;
-        std::cout << message.compare(0, sizeof("END_CONFIGURATION"), "END_CONFIGURATION") << std::endl;
+        if(message.compare(0, sizeof("END_CONFIGURATION"), "END_CONFIGURATION") != 0) {
+            file << message << std::endl;
+        }
     } while(message.compare(0, sizeof("END_CONFIGURATION"), "END_CONFIGURATION") != 0);
+    file.close();
 
     // initialisation de GLFW
     if (!glfwInit())
