@@ -119,7 +119,7 @@ void error_callback(int error, const char *description)
 /** point d'entrée du programme **/
 int main(int argc, char **argv)
 {
-    int sock = 0, client_id;
+    int sock = 0, client_id, end_conf = -1;
     size_t valread;
     struct sockaddr_in serv_addr;
     char buffer[N_CHAR];
@@ -161,9 +161,10 @@ int main(int argc, char **argv)
     do {
         memset(buffer, 0, sizeof(buffer));
         valread = read(sock, buffer, N_CHAR);
-        std::cout << "Duck configuration : " << buffer << std::endl;
+        message = buffer;
+        std::cout << "Duck configuration : " << message << std::endl;
         std::cout << message.compare(0, sizeof("END_CONFIGURATION"), "END_CONFIGURATION") << std::endl;
-    } while(true);
+    } while(message.compare(0, sizeof("END_CONFIGURATION"), "END_CONFIGURATION") != 0);
 
     // initialisation de GLFW
     if (!glfwInit())
