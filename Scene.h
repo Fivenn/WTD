@@ -19,6 +19,7 @@ private:
 
     // objets de la scène
     std::vector<Duck*> m_Ducks;
+    std::vector<Duck*>::iterator ptr;
 
     Ground* m_Ground;
 

@@ -51,7 +51,7 @@ Scene::Scene(std::string filename)
         duck->setOrientation(vec3::fromValues(orientation[0],orientation[1],orientation[2]));
         duck->setDraw(false);
         duck->setSound(true);
-        m_Ducks.push_back(duck); // custom Duck constructor
+        m_Ducks.push_back(duck); 
     }
 
     m_Ground = new Ground();
@@ -211,13 +211,13 @@ void Scene::onDrawFrame()
     mat4 tmp_v;
     vec4 pos;
 
-    for(Duck *duck : m_Ducks) {
-        mat4::translate(tmp_v, m_MatV, duck->getPosition());
+    for (ptr = m_Ducks.begin(); ptr < m_Ducks.end(); ptr++) {
+        mat4::translate(tmp_v, m_MatV, (*ptr)->getPosition());
         vec4::transformMat4(pos, vec4::fromValues(0,0,0,1), tmp_v);
         if (vec4::length(pos) < 5) {
-            std::cout<<"Canard 1 trouvé !" <<std::endl;
-            duck->setDraw(true);
-            duck->setSound(false);
+            std::cout<<"Canard " << ptr - m_Ducks.begin() << " trouvé !" << std::endl;
+            (*ptr)->setDraw(true);
+            (*ptr)->setSound(false);
         }
     }
 
@@ -228,10 +228,10 @@ void Scene::onDrawFrame()
 
     // fournir position et direction en coordonnées caméra aux objets éclairés
     m_Ground->setLight(m_Light);
-    for(Duck *duck : m_Ducks) {
-            duck->setLight(m_Light);
-    }
 
+    for (ptr = m_Ducks.begin(); ptr < m_Ducks.end(); ptr++) {
+        (*ptr)->setLight(m_Light);
+    }
 
     /** dessin de l'image **/
 
@@ -242,11 +242,9 @@ void Scene::onDrawFrame()
     m_Ground->onDraw(m_MatP, m_MatV);
 
     // dessiner le canard en mouvement
-    for(Duck *duck : m_Ducks) {
-        duck->onRender(m_MatP, m_MatV);
+    for (ptr = m_Ducks.begin(); ptr < m_Ducks.end(); ptr++) {
+        (*ptr)->onRender(m_MatP, m_MatV);
     }
-
-
 }
 
 /** supprime tous les objets de cette scène */
