@@ -28,6 +28,7 @@ Duck::Duck(std::string sound_path_name): Mesh("Duck")
     setMaterials(m_Material);
     m_Draw = false;
     m_Sound = false;
+    found = false;
 
     // charger le fichier obj
     loadObj("data/10602_Rubber_Duck_v1_L3.obj");
@@ -89,6 +90,14 @@ void Duck::setSound(bool b)
 	if (m_Sound && !b) alSourceStop(source);
 	if (!m_Sound && b) alSourcePlay(source);
 	m_Sound = b;
+}
+
+bool Duck::getFound(){
+    return found;
+}
+
+void Duck::setFound(bool b) {
+    found = true;
 }
 
 /**

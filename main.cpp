@@ -148,7 +148,7 @@ int main(int argc, char **argv)
     }
 
     // init connexion with server by sending CONNEXION message and get the client_id
-    std::string msg = "CONNEXION";
+    std::string msg = "CONNECTION";
     send(sock, msg.c_str(), msg.length(), 0);
     std::cout << msg << " message sent to the server" << std::endl;
     valread = read(sock, buffer, N_CHAR);
@@ -215,7 +215,7 @@ int main(int argc, char **argv)
     alListener3f(AL_VELOCITY, 0, 0, 0);
 
     // création de la scène => création des objets...
-    scene = new Scene("duckconfig.txt");
+    scene = new Scene("duckconfig.txt", sock);
     //debugGLFatal("new Scene()");
 
     // enregistrement des fonctions callbacks
@@ -239,6 +239,6 @@ int main(int argc, char **argv)
         // attendre les événements
         glfwPollEvents();
     } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(window));
-
+    
     return EXIT_SUCCESS;
 }

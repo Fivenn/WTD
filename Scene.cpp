@@ -17,8 +17,10 @@
 
 
 /** constructeur */
-Scene::Scene(std::string filename)
+Scene::Scene(std::string filename, int sock)
 {
+    // socket
+    this->sock = sock;
     // créer les objets à dessiner à partir d'un fichier de configuration
     std::fstream inputfile;
     std::string line;
@@ -214,10 +216,14 @@ void Scene::onDrawFrame()
     for (ptr = m_Ducks.begin(); ptr < m_Ducks.end(); ptr++) {
         mat4::translate(tmp_v, m_MatV, (*ptr)->getPosition());
         vec4::transformMat4(pos, vec4::fromValues(0,0,0,1), tmp_v);
-        if (vec4::length(pos) < 5) {
+        if (vec4::length(pos) < 5 && !(*ptr)->getFound()) {
             std::cout<<"Canard " << ptr - m_Ducks.begin() << " trouvé !" << std::endl;
             (*ptr)->setDraw(true);
             (*ptr)->setSound(false);
+            (*ptr)->setFound(true);
+            std::string msg = "DUCK_FOUND";
+            send(sock, msg.c_str(), msg.length(), 0);
+            std::cout << msg << " message sent to the server" << std::endl;
         }
     }
 
@@ -250,6 +256,7 @@ void Scene::onDrawFrame()
 /** supprime tous les objets de cette scène */
 Scene::~Scene()
 {
+    //TODO : delete Ducks
     delete &m_Ducks;
     delete m_Ground;
 }

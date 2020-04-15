@@ -16,7 +16,6 @@ private:
     /** matériau */
     MaterialTexture* m_Material;
 
-
     /** buffers pour la gestion du son */
     ALuint buffer, source;
 
@@ -26,7 +25,7 @@ private:
     /** position 3D du cube */
     vec3 m_Orientation;
 
-    bool m_Draw, m_Sound;
+    bool m_Draw, m_Sound, found;
 
 public:
 
@@ -78,6 +77,17 @@ public:
      * modifie la propriete de son
 =     */
     void setSound(bool b);
+
+    /**
+     * retourne le booléen permettant de savoir si un cannard a été trouvé
+     * @return bool found
+     */
+    bool getFound();
+
+    /**
+     * modifie la propriete permettant de savoir si un canard a été trouvé
+     */
+    void setFound(bool b);
 
     /**
      * définit la lampe

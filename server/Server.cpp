@@ -108,14 +108,16 @@ void deal_with_client(int new_socket, unsigned int id)
     size_t valread;
     mtx_world.lock();
     const Json::Value &objs = world["objects"];
+    int duck_counter = 0;
     mtx_world.unlock();
     mtx_winner_id.lock();
     do
     {
+        memset(buffer, 0, sizeof(buffer));
         mtx_winner_id.unlock();
         valread = read(new_socket, buffer, N_CHAR);
         std::string message(buffer);
-        if (message.compare(0, sizeof("CONNEXION"), "CONNEXION") == 0)
+        if (message.compare(0, sizeof("CONNECTION"), "CONNECTION") == 0)
         {
             std::cout << "connexion received" << std::endl;
             std::string msg = std::to_string(id);
@@ -136,6 +138,7 @@ void deal_with_client(int new_socket, unsigned int id)
                 msg += objs[i]["direction"]["x"].asString() + ",";
                 msg += objs[i]["direction"]["y"].asString() + ",";
                 msg += objs[i]["direction"]["z"].asString();
+                duck_counter += 1;
                 mtx_world.unlock();
                 send(new_socket, msg.c_str(), msg.length(), 0);
                 std::cout << msg << std::endl;
@@ -144,8 +147,16 @@ void deal_with_client(int new_socket, unsigned int id)
             msg = "END_CONFIGURATION";
             send(new_socket, msg.c_str(), msg.length(), 0);
         }
-        else if (message.compare(0, sizeof("CANNARD"), "CANNARD") == 0)
+        else if (message.compare(0, sizeof("DUCK_FOUND"), "DUCK_FOUND") == 0)
         {
+            mtx_world.lock();
+            duck_counter -= 1;
+            if(duck_counter == 0) {
+                std::cout << "BLBLBL" << std::endl;
+                std::string msg = "ALL_DUCKS_FOUND";
+                send(new_socket, msg.c_str(), msg.length(), 0);
+            }
+            mtx_world.unlock();
             std::cout << "cannard received" << std::endl;
         }
         else if (message.compare(0, sizeof("FIN"), "FIN") == 0)
