@@ -152,14 +152,13 @@ void deal_with_client(int new_socket, unsigned int id)
             mtx_world.lock();
             duck_counter -= 1;
             if(duck_counter == 0) {
-                std::cout << "BLBLBL" << std::endl;
                 std::string msg = "ALL_DUCKS_FOUND";
                 send(new_socket, msg.c_str(), msg.length(), 0);
             }
             mtx_world.unlock();
             std::cout << "cannard received" << std::endl;
         }
-        else if (message.compare(0, sizeof("FIN"), "FIN") == 0)
+        else if (message.compare(0, sizeof("END"), "END") == 0)
         {
             std::cout << "fin received" << std::endl;
 

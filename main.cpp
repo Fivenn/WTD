@@ -29,6 +29,8 @@
  **/
 Scene *scene = nullptr;
 
+int sock = 0;
+
 /**
  * Callback pour GLFW : prendre en compte la taille de la vue OpenGL
  **/
@@ -96,6 +98,10 @@ static void onKeyboard(GLFWwindow *window, int key, int scancode, int action, in
 
 void onExit()
 {
+    // notifie le serveur que la partie est finie
+    std::string msg = "END";
+    send(sock, msg.c_str(), msg.length(), 0);
+
     // libération des ressources demandées par la scène
     if (scene != nullptr)
         delete scene;
@@ -120,7 +126,7 @@ void error_callback(int error, const char *description)
 /** point d'entrée du programme **/
 int main(int argc, char **argv)
 {
-    int sock = 0, client_id, end_conf = -1;
+    int client_id, end_conf = -1;
     size_t valread;
     struct sockaddr_in serv_addr;
     char buffer[N_CHAR];

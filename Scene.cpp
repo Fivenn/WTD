@@ -256,7 +256,9 @@ void Scene::onDrawFrame()
 /** supprime tous les objets de cette scène */
 Scene::~Scene()
 {
-    //TODO : delete Ducks
+    for (ptr = m_Ducks.begin(); ptr < m_Ducks.end(); ptr++) {
+        delete (*ptr);
+    }
     delete &m_Ducks;
     delete m_Ground;
 }
