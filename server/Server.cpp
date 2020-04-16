@@ -122,7 +122,9 @@ void deal_with_client(int new_socket, unsigned int id)
             std::cout << "connexion received" << std::endl;
             std::string msg = std::to_string(id);
             send(new_socket, msg.c_str(), msg.length(), 0);
-        } else if(message.compare(0, sizeof("CONFIGURATION"), "CONFIGURATION") == 0) {
+        }
+        else if (message.compare(0, sizeof("CONFIGURATION"), "CONFIGURATION") == 0)
+        {
             std::string msg;
             for (unsigned int i = 0; i < objs.size(); i++)
             {
@@ -151,7 +153,8 @@ void deal_with_client(int new_socket, unsigned int id)
         {
             mtx_world.lock();
             duck_counter -= 1;
-            if(duck_counter == 0) {
+            if (duck_counter == 0)
+            {
                 std::string msg = "ALL_DUCKS_FOUND";
                 send(new_socket, msg.c_str(), msg.length(), 0);
             }
@@ -170,7 +173,6 @@ void deal_with_client(int new_socket, unsigned int id)
         }
         else
         {
-
             std::cout << message << "default case" << std::endl;
         }
         mtx_winner_id.lock();

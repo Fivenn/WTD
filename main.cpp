@@ -126,6 +126,7 @@ int main(int argc, char **argv)
     }
     connection_dealer.detach();
     server_dealer.detach();
+    game_dealer.detach();
 
     return EXIT_SUCCESS;
 }
@@ -163,8 +164,9 @@ void deal_with_socket()
     }
 }
 
-void deal_with_server(int new_socket) {
-        int client_id, end_conf = -1;
+void deal_with_server(int new_socket)
+{
+    int client_id, end_conf = -1;
     size_t valread;
     char buffer[N_CHAR];
 
@@ -192,6 +194,16 @@ void deal_with_server(int new_socket) {
         }
     } while (message.compare(0, sizeof("END_CONFIGURATION"), "END_CONFIGURATION") != 0);
     file.close();
+    do
+    {
+        memset(buffer, 0, sizeof(buffer));
+        valread = read(new_socket, buffer, N_CHAR);
+        message = buffer;
+    } while (message.compare(0, sizeof("ALL_DUCKS_FOUND"), "ALL_DUCKS_FOUND") != 0);
+    msg = "END";
+    send(new_socket, msg.c_str(), msg.length(), 0);
+    sleep(3);
+    isComplete = true;
 }
 
 void deal_with_game(int new_socket)
@@ -265,6 +277,5 @@ void deal_with_game(int new_socket)
         // attendre les événements
         glfwPollEvents();
     } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(window) || isComplete);
-
     return exit(EXIT_SUCCESS);
 }
