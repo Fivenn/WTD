@@ -12,6 +12,7 @@
 
 #include <utils.h>
 #include "Scene.h"
+#include "Client.h"
 
 #include <stdio.h>
 #include <sys/socket.h>
@@ -19,8 +20,6 @@
 #include <unistd.h>
 #include <string.h>
 
-#define PORT 8080
-#define SERV_ADDR "127.0.0.1"
 #define N_CHAR 1024UL
 
 /**
@@ -28,8 +27,6 @@
  * NB: son constructeur doit être appelé après avoir initialisé OpenGL
  **/
 Scene *scene = nullptr;
-
-int sock = 0;
 
 /**
  * Callback pour GLFW : prendre en compte la taille de la vue OpenGL
@@ -100,7 +97,7 @@ void onExit()
 {
     // notifie le serveur que la partie est finie
     std::string msg = "END";
-    send(sock, msg.c_str(), msg.length(), 0);
+    // send(new_socket, msg.c_str(), msg.length(), 0);
 
     // libération des ressources demandées par la scène
     if (scene != nullptr)
@@ -126,12 +123,23 @@ void error_callback(int error, const char *description)
 /** point d'entrée du programme **/
 int main(int argc, char **argv)
 {
-    int client_id, end_conf = -1;
-    size_t valread;
-    struct sockaddr_in serv_addr;
-    char buffer[N_CHAR];
+    bool isComplete = false;
+    std::thread connection_dealer = std::thread(deal_with_socket);
+    while (!isComplete)
+    {
+    }
+    connection_dealer.detach();
+    server_dealer.detach();
 
-    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+    return EXIT_SUCCESS;
+}
+
+void deal_with_socket()
+{
+    struct sockaddr_in serv_addr;
+    int new_socket;
+
+    if ((new_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
         std::cerr << "Socket creation error" << std::endl;
         exit(EXIT_FAILURE);
@@ -147,33 +155,46 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
+    if (connect(new_socket, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
     {
         std::cerr << "Connection Failed" << std::endl;
         exit(EXIT_FAILURE);
     }
+    std::thread server_dealer = std::thread(deal_with_server, new_socket);
+    while (!isComplete)
+    {
+    }
+}
+
+void deal_with_server(int new_socket)
+{
+    int client_id, end_conf = -1;
+    size_t valread;
+    char buffer[N_CHAR];
 
     // init connexion with server by sending CONNEXION message and get the client_id
     std::string msg = "CONNECTION";
-    send(sock, msg.c_str(), msg.length(), 0);
+    send(new_socket, msg.c_str(), msg.length(), 0);
     std::cout << msg << " message sent to the server" << std::endl;
-    valread = read(sock, buffer, N_CHAR);
+    valread = read(new_socket, buffer, N_CHAR);
     std::string message(buffer);
     std::cout << "Client id : " << message << std::endl;
     client_id = atoi(message.c_str());
-    
+
     // get duck configuration line by line
     msg = "CONFIGURATION";
-    send(sock, msg.c_str(), msg.length(), 0);
+    send(new_socket, msg.c_str(), msg.length(), 0);
     std::ofstream file("duckconfig.txt");
-    do {
+    do
+    {
         memset(buffer, 0, sizeof(buffer));
-        valread = read(sock, buffer, N_CHAR);
+        valread = read(new_socket, buffer, N_CHAR);
         message = buffer;
-        if(message.compare(0, sizeof("END_CONFIGURATION"), "END_CONFIGURATION") != 0) {
+        if (message.compare(0, sizeof("END_CONFIGURATION"), "END_CONFIGURATION") != 0)
+        {
             file << message << std::endl;
         }
-    } while(message.compare(0, sizeof("END_CONFIGURATION"), "END_CONFIGURATION") != 0);
+    } while (message.compare(0, sizeof("END_CONFIGURATION"), "END_CONFIGURATION") != 0);
     file.close();
 
     // initialisation de GLFW
@@ -221,7 +242,7 @@ int main(int argc, char **argv)
     alListener3f(AL_VELOCITY, 0, 0, 0);
 
     // création de la scène => création des objets...
-    scene = new Scene("duckconfig.txt", sock);
+    scene = new Scene("duckconfig.txt", new_socket);
     //debugGLFatal("new Scene()");
 
     // enregistrement des fonctions callbacks
@@ -244,7 +265,7 @@ int main(int argc, char **argv)
         onDrawRequest(window);
         // attendre les événements
         glfwPollEvents();
-    } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(window));
-    
-    return EXIT_SUCCESS;
+    } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(window) || isComplete);
+
+    return exit(EXIT_SUCCESS);
 }
