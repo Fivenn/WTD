@@ -10,13 +10,21 @@
 #include "Duck.h"
 #include "Ground.h"
 
+#include <vector>
+
+#include <sys/socket.h>
+
 
 class Scene
 {
 private:
 
+    // socket
+    int sock;
+
     // objets de la scène
-    Duck *m_Ducks[2];
+    std::vector<Duck*> m_Ducks;
+    std::vector<Duck*>::iterator ptr;
 
     Ground* m_Ground;
 
@@ -45,7 +53,7 @@ public:
     /** constructeur, crée les objets 3D à dessiner
      * @param filename : nom du fichier contenant la configuration des canards à charger
      */
-    Scene(std::string filename);
+    Scene(std::string filename, int sock);
 
     /** destructeur, libère les ressources */
     ~Scene();

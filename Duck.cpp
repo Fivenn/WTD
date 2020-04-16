@@ -28,6 +28,7 @@ Duck::Duck(std::string sound_path_name): Mesh("Duck")
     setMaterials(m_Material);
     m_Draw = false;
     m_Sound = false;
+    found = false;
 
     // charger le fichier obj
     loadObj("data/10602_Rubber_Duck_v1_L3.obj");
@@ -66,7 +67,7 @@ Duck::Duck(std::string sound_path_name): Mesh("Duck")
     alSourcef(source, AL_CONE_OUTER_ANGLE, 30);
     // à l'extérieur de [-outer/2,outer/2] il y a une attenuation totale
 
-    alDistanceModel(AL_LINEAR_DISTANCE); 
+    alDistanceModel(AL_LINEAR_DISTANCE_CLAMPED); 
 }
 
 
@@ -89,6 +90,14 @@ void Duck::setSound(bool b)
 	if (m_Sound && !b) alSourceStop(source);
 	if (!m_Sound && b) alSourcePlay(source);
 	m_Sound = b;
+}
+
+bool Duck::getFound(){
+    return found;
+}
+
+void Duck::setFound(bool b) {
+    found = true;
 }
 
 /**
