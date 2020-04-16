@@ -95,10 +95,6 @@ static void onKeyboard(GLFWwindow *window, int key, int scancode, int action, in
 
 void onExit()
 {
-    // notifie le serveur que la partie est finie
-    std::string msg = "END";
-    // send(new_socket, msg.c_str(), msg.length(), 0);
-
     // libération des ressources demandées par la scène
     if (scene != nullptr)
         delete scene;
@@ -161,14 +157,14 @@ void deal_with_socket()
         exit(EXIT_FAILURE);
     }
     std::thread server_dealer = std::thread(deal_with_server, new_socket);
+    std::thread game_dealer = std::thread(deal_with_game, new_socket);
     while (!isComplete)
     {
     }
 }
 
-void deal_with_server(int new_socket)
-{
-    int client_id, end_conf = -1;
+void deal_with_server(int new_socket) {
+        int client_id, end_conf = -1;
     size_t valread;
     char buffer[N_CHAR];
 
@@ -196,7 +192,10 @@ void deal_with_server(int new_socket)
         }
     } while (message.compare(0, sizeof("END_CONFIGURATION"), "END_CONFIGURATION") != 0);
     file.close();
+}
 
+void deal_with_game(int new_socket)
+{
     // initialisation de GLFW
     if (!glfwInit())
     {
