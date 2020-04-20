@@ -1,5 +1,20 @@
 #include "Server.h"
 
+int extractIntegerWords(std::string str) 
+{ 
+	std::stringstream ss;	 
+	ss << str; 
+	std::string temp; 
+	int found, res = -1; 
+	while (!ss.eof()) { 
+		ss >> temp; 
+		if (std::stringstream(temp) >> found) 
+            res = found;
+		temp = ""; 
+	}
+    return res; 
+} 
+
 int main(int argc, char *argv[])
 {
     // check arguments
@@ -132,7 +147,6 @@ void deal_with_client(int new_socket, unsigned int id)
                 msg = "";
                 msg = objs[i]["type"].asString() + ":";
                 msg += objs[i]["sound"].asString() + ":";
-
                 msg += objs[i]["position"]["x"].asString() + ",";
                 msg += objs[i]["position"]["y"].asString() + ",";
                 msg += objs[i]["position"]["z"].asString() + ":";
@@ -149,17 +163,26 @@ void deal_with_client(int new_socket, unsigned int id)
             msg = "END_CONFIGURATION";
             send(new_socket, msg.c_str(), msg.length(), 0);
         }
-        else if (message.compare(0, sizeof("DUCK_FOUND"), "DUCK_FOUND") == 0)
+        else if (message.find("DUCK_FOUND") != std::string::npos)
         {
+            std::string msg;
             mtx_world.lock();
             duck_counter -= 1;
             if (duck_counter == 0)
             {
-                std::string msg = "ALL_DUCKS_FOUND";
-                send(new_socket, msg.c_str(), msg.length(), 0);
+                msg = "ALL_DUCKS_FOUND";
+                for (auto &i : clients)
+                {
+                    send(i.second, msg.c_str(), msg.length(), 0);
+                }
             }
             mtx_world.unlock();
-            std::cout << "cannard received" << std::endl;
+/*             msg = "DUCK_FOUND_BY_CLIENT_" + std::to_string(id);
+            for (auto &i : clients)
+                {
+                    send(i.second, msg.c_str(), msg.length(), 0);
+                } */
+            std::cout << "cannard " + std::to_string(extractIntegerWords(message)) + " received from client " << id << std::endl;
         }
         else if (message.compare(0, sizeof("END"), "END") == 0)
         {
@@ -170,6 +193,10 @@ void deal_with_client(int new_socket, unsigned int id)
             mtx_winner_id.unlock();
 
             mtx_main.unlock();
+        }
+        else if (message.find("CLIENT_POSITION") != std::string::npos)
+        {
+            std::cout << "client " << id << " position received" << std::endl;
         }
         else
         {

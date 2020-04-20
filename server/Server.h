@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <string.h>
 #include <fstream>
+#include <sstream>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -24,5 +25,6 @@ std::mutex mtx_winner_id;
 Json::Value world;
 std::mutex mtx_world;
 
+int extractIntegerWords(std::string str);
 void deal_with_socket(uint16_t port);
 void deal_with_client(int new_socket, unsigned int id);

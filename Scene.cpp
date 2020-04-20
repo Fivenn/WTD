@@ -183,9 +183,10 @@ void Scene::onKeyDown(unsigned char code)
     default:
         return;
     }
-
     // appliquer le décalage au centre de la rotation
     vec3::add(m_Center, m_Center, offset);
+    std::string msg = "CLIENT_POSITION:" + std::to_string(m_Center[0]) + "," + std::to_string(m_Center[1]) + "," + std::to_string(m_Center[2]);
+    send(sock, msg.c_str(), msg.length(), 0);
 }
 
 
@@ -221,7 +222,7 @@ void Scene::onDrawFrame()
             (*ptr)->setDraw(true);
             (*ptr)->setSound(false);
             (*ptr)->setFound(true);
-            std::string msg = "DUCK_FOUND";
+            std::string msg = std::to_string(ptr - m_Ducks.begin()) + ":DUCK_FOUND";
             send(sock, msg.c_str(), msg.length(), 0);
             std::cout << msg << " message sent to the server" << std::endl;
         }

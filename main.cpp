@@ -199,6 +199,9 @@ void deal_with_server(int new_socket)
         memset(buffer, 0, sizeof(buffer));
         valread = read(new_socket, buffer, N_CHAR);
         message = buffer;
+        if(message.find("DUCK_FOUND_BY_CLIENT") != std::string::npos) {
+            std::cout << message << std::endl;
+        }
     } while (message.compare(0, sizeof("ALL_DUCKS_FOUND"), "ALL_DUCKS_FOUND") != 0);
     msg = "END";
     send(new_socket, msg.c_str(), msg.length(), 0);
