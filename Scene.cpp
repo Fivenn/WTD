@@ -13,6 +13,8 @@
 #include<fstream>
 #include <sstream>
 
+#include<unistd.h>
+
 #include "Scene.h"
 
 
@@ -183,9 +185,12 @@ void Scene::onKeyDown(unsigned char code)
     default:
         return;
     }
-
     // appliquer le décalage au centre de la rotation
     vec3::add(m_Center, m_Center, offset);
+    std::string msg = "CLIENT_POSITION";
+    send(sock, msg.c_str(), msg.length(), 0);
+    msg = std::to_string(m_Center[0]) + "," + std::to_string(m_Center[1]) + "," + std::to_string(m_Center[2]);
+    send(sock, msg.c_str(), msg.length(), 0);
 }
 
 
@@ -217,13 +222,11 @@ void Scene::onDrawFrame()
         mat4::translate(tmp_v, m_MatV, (*ptr)->getPosition());
         vec4::transformMat4(pos, vec4::fromValues(0,0,0,1), tmp_v);
         if (vec4::length(pos) < 5 && !(*ptr)->getFound()) {
-            std::cout<<"Canard " << ptr - m_Ducks.begin() << " trouvé !" << std::endl;
             (*ptr)->setDraw(true);
             (*ptr)->setSound(false);
             (*ptr)->setFound(true);
             std::string msg = "DUCK_FOUND";
             send(sock, msg.c_str(), msg.length(), 0);
-            std::cout << msg << " message sent to the server" << std::endl;
         }
     }
 
