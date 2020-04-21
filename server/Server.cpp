@@ -158,7 +158,7 @@ void deal_with_client(int new_socket, unsigned int id)
                 duck_counter += 1;
                 mtx_world.unlock();
                 send(new_socket, msg.c_str(), msg.length(), 0);
-                sleep(1);
+                usleep(300000);
             }
             std::cout << "Configuration complete for client " << id << std::endl;
             msg = "END_CONFIGURATION";
@@ -171,19 +171,23 @@ void deal_with_client(int new_socket, unsigned int id)
             mtx_world.lock();
             duck_counter -= 1;
             msg = "DUCK_FOUND_BY_CLIENT_" + std::to_string(id);
+            mtx_clients.lock();
             for (auto &i : clients)
                 {
                     send(i.second, msg.c_str(), msg.length(), 0);
                 }
+            mtx_clients.unlock();
             if (duck_counter == 0)
             {
-                sleep(1);
+                usleep(300000);
                 std::cout << "Client " << id << " found all the ducks" << std::endl;
                 msg = "ALL_DUCKS_FOUND";
+                mtx_clients.lock();
                 for (auto &i : clients)
                 {
                     send(i.second, msg.c_str(), msg.length(), 0);
                 }
+                mtx_clients.unlock();
             }
             mtx_world.unlock();
         }
@@ -195,9 +199,12 @@ void deal_with_client(int new_socket, unsigned int id)
             mtx_winner_id.unlock();
             mtx_main.unlock();
         }
-        else if (message.find("CLIENT_POSITION") != std::string::npos)
+        else if (message.compare(0, sizeof("CLIENT_POSITION"), "CLIENT_POSITION") == 0)
         {
-            std::cout << "Position received from client " << id << std::endl;
+            memset(buffer, 0, sizeof(buffer));
+            valread = read(new_socket, buffer, N_CHAR);
+            message = buffer;
+            std::cout << "Client's position " << id << ": " << message << std::endl;
         }
         else
         {

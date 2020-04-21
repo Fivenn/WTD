@@ -13,6 +13,8 @@
 #include<fstream>
 #include <sstream>
 
+#include<unistd.h>
+
 #include "Scene.h"
 
 
@@ -185,7 +187,9 @@ void Scene::onKeyDown(unsigned char code)
     }
     // appliquer le décalage au centre de la rotation
     vec3::add(m_Center, m_Center, offset);
-    std::string msg = "CLIENT_POSITION:" + std::to_string(m_Center[0]) + "," + std::to_string(m_Center[1]) + "," + std::to_string(m_Center[2]);
+    std::string msg = "CLIENT_POSITION";
+    send(sock, msg.c_str(), msg.length(), 0);
+    msg = std::to_string(m_Center[0]) + "," + std::to_string(m_Center[1]) + "," + std::to_string(m_Center[2]);
     send(sock, msg.c_str(), msg.length(), 0);
 }
 

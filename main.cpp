@@ -209,7 +209,7 @@ void deal_with_server(int new_socket)
     std::cout << "Gamer over" << std::endl;
     msg = "END";
     send(new_socket, msg.c_str(), msg.length(), 0);
-    sleep(3);
+    usleep(300000);
     isComplete = true;
 }
 
