@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     }
     mtx_winner_id.unlock();
     mtx_winner_id.lock();
-    std::cout << "client " << winner_id << " wins !" << std::endl;
+    std::cout << "Client " << winner_id << " wins !" << std::endl;
     mtx_winner_id.unlock();
     // terminate threads
     connection_dealer.detach();
@@ -109,7 +109,7 @@ void deal_with_socket(uint16_t port)
             std::cerr << "accept " << __FILE__ << " " << __LINE__ << std::endl;
             exit(EXIT_FAILURE);
         }
-        std::cout << "client " << clients.size() << " connected" << std::endl;
+        std::cout << "Client " << clients.size() << " connected" << std::endl;
         mtx_clients.lock();
         clients.emplace_back(std::thread(deal_with_client, new_socket, clients.size()), new_socket);
         mtx_clients.unlock();
@@ -134,12 +134,13 @@ void deal_with_client(int new_socket, unsigned int id)
         std::string message(buffer);
         if (message.compare(0, sizeof("CONNECTION"), "CONNECTION") == 0)
         {
-            std::cout << "connexion received" << std::endl;
+            std::cout << "Connection received from client " << id << std::endl;
             std::string msg = std::to_string(id);
             send(new_socket, msg.c_str(), msg.length(), 0);
         }
         else if (message.compare(0, sizeof("CONFIGURATION"), "CONFIGURATION") == 0)
         {
+            std::cout << "Sending the configuration for client " << id << "..." << std::endl;
             std::string msg;
             for (unsigned int i = 0; i < objs.size(); i++)
             {
@@ -157,19 +158,27 @@ void deal_with_client(int new_socket, unsigned int id)
                 duck_counter += 1;
                 mtx_world.unlock();
                 send(new_socket, msg.c_str(), msg.length(), 0);
-                std::cout << msg << std::endl;
                 sleep(1);
             }
+            std::cout << "Configuration complete for client " << id << std::endl;
             msg = "END_CONFIGURATION";
             send(new_socket, msg.c_str(), msg.length(), 0);
         }
-        else if (message.find("DUCK_FOUND") != std::string::npos)
+        else if (message.compare(0, sizeof("DUCK_FOUND"), "DUCK_FOUND") == 0)
         {
+            std::cout << "Duck found by the client " << id << std::endl;
             std::string msg;
             mtx_world.lock();
             duck_counter -= 1;
+            msg = "DUCK_FOUND_BY_CLIENT_" + std::to_string(id);
+            for (auto &i : clients)
+                {
+                    send(i.second, msg.c_str(), msg.length(), 0);
+                }
             if (duck_counter == 0)
             {
+                sleep(1);
+                std::cout << "Client " << id << " found all the ducks" << std::endl;
                 msg = "ALL_DUCKS_FOUND";
                 for (auto &i : clients)
                 {
@@ -177,30 +186,22 @@ void deal_with_client(int new_socket, unsigned int id)
                 }
             }
             mtx_world.unlock();
-/*             msg = "DUCK_FOUND_BY_CLIENT_" + std::to_string(id);
-            for (auto &i : clients)
-                {
-                    send(i.second, msg.c_str(), msg.length(), 0);
-                } */
-            std::cout << "cannard " + std::to_string(extractIntegerWords(message)) + " received from client " << id << std::endl;
         }
         else if (message.compare(0, sizeof("END"), "END") == 0)
         {
-            std::cout << "fin received" << std::endl;
-
+            std::cout << "End received by client " << id << std::endl;
             mtx_winner_id.lock();
             winner_id = id;
             mtx_winner_id.unlock();
-
             mtx_main.unlock();
         }
         else if (message.find("CLIENT_POSITION") != std::string::npos)
         {
-            std::cout << "client " << id << " position received" << std::endl;
+            std::cout << "Position received from client " << id << std::endl;
         }
         else
         {
-            std::cout << message << "default case" << std::endl;
+            std::cout << message << "Default case" << std::endl;
         }
         mtx_winner_id.lock();
     } while (winner_id == -1 && valread != 0);

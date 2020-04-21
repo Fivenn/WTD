@@ -171,15 +171,17 @@ void deal_with_server(int new_socket)
     char buffer[N_CHAR];
 
     // init connexion with server by sending CONNEXION message and get the client_id
+    std::cout << "Connecting to the server" << std::endl;
     std::string msg = "CONNECTION";
     send(new_socket, msg.c_str(), msg.length(), 0);
-    std::cout << msg << " message sent to the server" << std::endl;
+    memset(buffer, 0, sizeof(buffer));
     valread = read(new_socket, buffer, N_CHAR);
     std::string message(buffer);
     std::cout << "Client id : " << message << std::endl;
     client_id = atoi(message.c_str());
 
     // get duck configuration line by line
+    std::cout << "Waiting for configuration from the server..." << std::endl;
     msg = "CONFIGURATION";
     send(new_socket, msg.c_str(), msg.length(), 0);
     std::ofstream file("duckconfig.txt");
@@ -194,6 +196,7 @@ void deal_with_server(int new_socket)
         }
     } while (message.compare(0, sizeof("END_CONFIGURATION"), "END_CONFIGURATION") != 0);
     file.close();
+    std::cout << "Configuration completed" << std::endl;
     do
     {
         memset(buffer, 0, sizeof(buffer));
@@ -203,6 +206,7 @@ void deal_with_server(int new_socket)
             std::cout << message << std::endl;
         }
     } while (message.compare(0, sizeof("ALL_DUCKS_FOUND"), "ALL_DUCKS_FOUND") != 0);
+    std::cout << "Gamer over" << std::endl;
     msg = "END";
     send(new_socket, msg.c_str(), msg.length(), 0);
     sleep(3);

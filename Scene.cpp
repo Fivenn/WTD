@@ -218,13 +218,11 @@ void Scene::onDrawFrame()
         mat4::translate(tmp_v, m_MatV, (*ptr)->getPosition());
         vec4::transformMat4(pos, vec4::fromValues(0,0,0,1), tmp_v);
         if (vec4::length(pos) < 5 && !(*ptr)->getFound()) {
-            std::cout<<"Canard " << ptr - m_Ducks.begin() << " trouvé !" << std::endl;
             (*ptr)->setDraw(true);
             (*ptr)->setSound(false);
             (*ptr)->setFound(true);
-            std::string msg = std::to_string(ptr - m_Ducks.begin()) + ":DUCK_FOUND";
+            std::string msg = "DUCK_FOUND";
             send(sock, msg.c_str(), msg.length(), 0);
-            std::cout << msg << " message sent to the server" << std::endl;
         }
     }
 
