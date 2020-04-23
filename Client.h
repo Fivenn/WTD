@@ -7,8 +7,8 @@
 std::thread server_dealer;
 std::thread game_dealer;
 
-bool isComplete;
+bool game_over;
 
 void deal_with_socket();
 void deal_with_server(int new_socket);
-void deal_with_game(int new_socket);
+void deal_with_game(int new_socket, std::string duck_config);

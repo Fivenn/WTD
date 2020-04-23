@@ -142,27 +142,14 @@ void deal_with_client(int new_socket, unsigned int id)
         {
             std::cout << "Sending the configuration for client " << id << "..." << std::endl;
             std::string msg;
-            for (unsigned int i = 0; i < objs.size(); i++)
-            {
-                mtx_world.lock();
-                msg = "";
-                msg = objs[i]["type"].asString() + ":";
-                msg += objs[i]["sound"].asString() + ":";
-                msg += objs[i]["position"]["x"].asString() + ",";
-                msg += objs[i]["position"]["y"].asString() + ",";
-                msg += objs[i]["position"]["z"].asString() + ":";
-
-                msg += objs[i]["direction"]["x"].asString() + ",";
-                msg += objs[i]["direction"]["y"].asString() + ",";
-                msg += objs[i]["direction"]["z"].asString();
-                duck_counter += 1;
-                mtx_world.unlock();
-                send(new_socket, msg.c_str(), msg.length(), 0);
-                usleep(300000);
-            }
-            std::cout << "Configuration complete for client " << id << std::endl;
-            msg = "END_CONFIGURATION";
+            Json::StreamWriterBuilder wbuilder;
+            wbuilder["indentation"] = "\t";
+            mtx_world.lock();
+            msg = Json::writeString(wbuilder, objs);
+            duck_counter = objs.size();
+            mtx_world.unlock();
             send(new_socket, msg.c_str(), msg.length(), 0);
+            std::cout << "Configuration complete for client " << id << std::endl;
         }
         else if (message.compare(0, sizeof("DUCK_FOUND"), "DUCK_FOUND") == 0)
         {
@@ -175,11 +162,11 @@ void deal_with_client(int new_socket, unsigned int id)
             for (auto &i : clients)
                 {
                     send(i.second, msg.c_str(), msg.length(), 0);
+                    usleep(300000);
                 }
             mtx_clients.unlock();
             if (duck_counter == 0)
             {
-                usleep(300000);
                 std::cout << "Client " << id << " found all the ducks" << std::endl;
                 msg = "ALL_DUCKS_FOUND";
                 mtx_clients.lock();
