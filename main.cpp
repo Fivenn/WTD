@@ -119,14 +119,9 @@ void error_callback(int error, const char *description)
 /** point d'entrée du programme **/
 int main(int argc, char **argv)
 {
-    bool isComplete = false;
+    bool game_over = false;
     std::thread connection_dealer = std::thread(deal_with_socket);
-    while (!isComplete)
-    {
-    }
-    connection_dealer.detach();
-    server_dealer.detach();
-    game_dealer.detach();
+    connection_dealer.join();
 
     return EXIT_SUCCESS;
 }
@@ -158,10 +153,7 @@ void deal_with_socket()
         exit(EXIT_FAILURE);
     }
     std::thread server_dealer = std::thread(deal_with_server, new_socket);
-    std::thread game_dealer = std::thread(deal_with_game, new_socket);
-    while (!isComplete)
-    {
-    }
+    server_dealer.join();
 }
 
 void deal_with_server(int new_socket)
@@ -169,6 +161,7 @@ void deal_with_server(int new_socket)
     int client_id, end_conf = -1;
     size_t valread;
     char buffer[N_CHAR];
+    std::string duck_config;
 
     // init connexion with server by sending CONNEXION message and get the client_id
     std::cout << "Connecting to the server" << std::endl;
@@ -184,19 +177,10 @@ void deal_with_server(int new_socket)
     std::cout << "Waiting for configuration from the server..." << std::endl;
     msg = "CONFIGURATION";
     send(new_socket, msg.c_str(), msg.length(), 0);
-    std::ofstream file("duckconfig.txt");
-    do
-    {
-        memset(buffer, 0, sizeof(buffer));
-        valread = read(new_socket, buffer, N_CHAR);
-        message = buffer;
-        if (message.compare(0, sizeof("END_CONFIGURATION"), "END_CONFIGURATION") != 0)
-        {
-            file << message << std::endl;
-        }
-    } while (message.compare(0, sizeof("END_CONFIGURATION"), "END_CONFIGURATION") != 0);
-    file.close();
-    std::cout << "Configuration completed" << std::endl;
+    memset(buffer, 0, sizeof(buffer));
+    valread = read(new_socket, buffer, N_CHAR);
+    duck_config = buffer;
+    std::thread game_dealer = std::thread(deal_with_game, new_socket, duck_config);
     do
     {
         memset(buffer, 0, sizeof(buffer));
@@ -209,11 +193,11 @@ void deal_with_server(int new_socket)
     std::cout << "Gamer over" << std::endl;
     msg = "END";
     send(new_socket, msg.c_str(), msg.length(), 0);
-    usleep(300000);
-    isComplete = true;
+    game_over = true;
+    game_dealer.join();
 }
 
-void deal_with_game(int new_socket)
+void deal_with_game(int new_socket, std::string duck_config)
 {
     // initialisation de GLFW
     if (!glfwInit())
@@ -260,7 +244,7 @@ void deal_with_game(int new_socket)
     alListener3f(AL_VELOCITY, 0, 0, 0);
 
     // création de la scène => création des objets...
-    scene = new Scene("duckconfig.txt", new_socket);
+    scene = new Scene(duck_config, new_socket);
     //debugGLFatal("new Scene()");
 
     // enregistrement des fonctions callbacks
@@ -283,6 +267,7 @@ void deal_with_game(int new_socket)
         onDrawRequest(window);
         // attendre les événements
         glfwPollEvents();
-    } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(window) || isComplete);
+    } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(window) && !game_over);
+
     return exit(EXIT_SUCCESS);
 }

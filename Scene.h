@@ -14,7 +14,6 @@
 
 #include <sys/socket.h>
 
-
 class Scene
 {
 private:
@@ -53,7 +52,7 @@ public:
     /** constructeur, crée les objets 3D à dessiner
      * @param filename : nom du fichier contenant la configuration des canards à charger
      */
-    Scene(std::string filename, int sock);
+    Scene(std::string duck_config, int sock);
 
     /** destructeur, libère les ressources */
     ~Scene();
