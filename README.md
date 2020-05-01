@@ -3,7 +3,7 @@
 ### Programme client
 Pour effectuer les différentes commandes ci-dessous, merci de vous placer dans le dossier ```WTD/```.
 #### Librairies
-Le programme client a besoin des librairies suivantes pour compiler
+Le programme client a besoin des librairies suivantes pour compiler.
 ```
 ljsoncpp
 lpthread
@@ -31,7 +31,7 @@ make run
 ### Progamme serveur
 Pour effectuer les différentes commandes ci-dessous, merci de vous placer dans le dossier ```WTD/server/```.
 #### Librairies
-Le programme serveur a besoin des librairies suivantes pour compiler
+Le programme serveur a besoin des librairies suivantes pour compiler.
 ```
 ljsoncpp
 lpthread
