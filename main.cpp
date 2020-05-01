@@ -269,5 +269,7 @@ void deal_with_game(int new_socket, std::string duck_config)
         glfwPollEvents();
     } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && !glfwWindowShouldClose(window) && !game_over);
 
+    sleep(5);
+
     return exit(EXIT_SUCCESS);
 }

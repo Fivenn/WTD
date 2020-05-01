@@ -175,15 +175,15 @@ void deal_with_client(int new_socket, unsigned int id)
                     send(i.second, msg.c_str(), msg.length(), 0);
                 }
                 mtx_clients.unlock();
+                mtx_winner_id.lock();
+                winner_id = id;
+                mtx_winner_id.unlock();
             }
             mtx_world.unlock();
         }
         else if (message.compare(0, sizeof("END"), "END") == 0)
         {
             std::cout << "End received by client " << id << std::endl;
-            mtx_winner_id.lock();
-            winner_id = id;
-            mtx_winner_id.unlock();
             mtx_main.unlock();
         }
         else if (message.compare(0, sizeof("CLIENT_POSITION"), "CLIENT_POSITION") == 0)
@@ -191,11 +191,11 @@ void deal_with_client(int new_socket, unsigned int id)
             memset(buffer, 0, sizeof(buffer));
             valread = read(new_socket, buffer, N_CHAR);
             message = buffer;
-            std::cout << "Client's position " << id << ": " << message << std::endl;
+            //std::cout << "Client's position " << id << ": " << message << std::endl;
         }
         else
         {
-            std::cout << message << "Default case" << std::endl;
+            // std::cout << message << "Default case" << std::endl;
         }
         mtx_winner_id.lock();
     } while (winner_id == -1 && valread != 0);
