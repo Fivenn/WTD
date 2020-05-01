@@ -163,7 +163,6 @@ void deal_with_server(int new_socket)
     char buffer[N_CHAR];
     std::string duck_config;
 
-    // init connexion with server by sending CONNEXION message and get the client_id
     std::cout << "Connecting to the server" << std::endl;
     std::string msg = "CONNECTION";
     send(new_socket, msg.c_str(), msg.length(), 0);
@@ -173,7 +172,6 @@ void deal_with_server(int new_socket)
     std::cout << "Client id : " << message << std::endl;
     client_id = atoi(message.c_str());
 
-    // get duck configuration line by line
     std::cout << "Waiting for configuration from the server..." << std::endl;
     msg = "CONFIGURATION";
     send(new_socket, msg.c_str(), msg.length(), 0);
